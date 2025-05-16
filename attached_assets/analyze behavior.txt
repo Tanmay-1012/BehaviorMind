@@ -1,0 +1,85 @@
+// 'use server';
+/**
+ * @fileOverview AI-powered behavior analysis flow.
+ *
+ * This flow analyzes aggregated usage, health, location, and mood data to predict behavior patterns and potential mental fatigue.
+ * It uses a Genkit prompt to perform the analysis and returns insights.
+ *
+ * @exports analyzeBehavior - The main function to trigger the behavior analysis flow.
+ * @exports AnalyzeBehaviorInput - The input type for the analyzeBehavior function.
+ * @exports AnalyzeBehaviorOutput - The output type for the analyzeBehavior function.
+ */
+
+'use server';
+
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+
+const AnalyzeBehaviorInputSchema = z.object({
+  usageData: z.string().describe('Aggregated usage data from the user device.'),
+  healthData: z.string().describe('Aggregated health data from the user device.'),
+  locationData: z.string().describe('Aggregated location data from the user device.'),
+  moodData: z.string().describe('Aggregated mood data from the user, including contextual feelings.'),
+});
+
+export type AnalyzeBehaviorInput = z.infer<typeof AnalyzeBehaviorInputSchema>;
+
+const AnalyzeBehaviorOutputSchema = z.object({
+  behaviorPatterns: z.string().describe('Identified behavior patterns based on the input data.'),
+  mentalFatiguePrediction: z.string().describe('Prediction of potential mental fatigue based on the input data.'),
+  insights: z.string().describe('Insights derived from the analysis of the input data.'),
+});
+
+export type AnalyzeBehaviorOutput = z.infer<typeof AnalyzeBehaviorOutputSchema>;
+
+export async function analyzeBehavior(input: AnalyzeBehaviorInput): Promise<AnalyzeBehaviorOutput> {
+  return analyzeBehaviorFlow(input);
+}
+
+const analyzeBehaviorPrompt = ai.definePrompt({
+  name: 'analyzeBehaviorPrompt',
+  input: {schema: AnalyzeBehaviorInputSchema},
+  output: {schema: AnalyzeBehaviorOutputSchema},
+  prompt: `You are an AI assistant specialized in analyzing user behavior data to predict behavior patterns and potential mental fatigue.
+
+  Analyze the following aggregated data to identify behavior patterns, predict potential mental fatigue, and provide insights.
+
+  Usage Data: {{{usageData}}}
+  Health Data: {{{healthData}}}
+  Location Data: {{{locationData}}}
+  Mood Data: {{{moodData}}}
+
+  Provide a summary of behavior patterns, a prediction of potential mental fatigue, and insights derived from the analysis.
+  `,
+});
+
+const analyzeBehaviorFlow = ai.defineFlow(
+  {
+    name: 'analyzeBehaviorFlow',
+    inputSchema: AnalyzeBehaviorInputSchema,
+    outputSchema: AnalyzeBehaviorOutputSchema,
+  },
+  async input => {
+    const {output} = await analyzeBehaviorPrompt(input);
+    return output!;
+  }
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

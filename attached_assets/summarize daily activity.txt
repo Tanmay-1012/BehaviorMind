@@ -1,0 +1,52 @@
+'use server';
+
+/**
+ * @fileOverview Summarizes the user's daily activity data into concise insights.
+ *
+ * - summarizeDailyActivity - A function that summarizes daily activity data.
+ * - SummarizeDailyActivityInput - The input type for the summarizeDailyActivity function.
+ * - SummarizeDailyActivityOutput - The return type for the summarizeDailyActivity function.
+ */
+
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+
+const SummarizeDailyActivityInputSchema = z.object({
+  activityData: z.string().describe('A detailed log of the user\'s daily activities, including app usage, location data, mood logs, and health metrics.'),
+});
+export type SummarizeDailyActivityInput = z.infer<typeof SummarizeDailyActivityInputSchema>;
+
+const SummarizeDailyActivityOutputSchema = z.object({
+  summary: z.string().describe('A concise summary of the user\'s daily activity, highlighting key trends and insights.'),
+});
+export type SummarizeDailyActivityOutput = z.infer<typeof SummarizeDailyActivityOutputSchema>;
+
+export async function summarizeDailyActivity(input: SummarizeDailyActivityInput): Promise<SummarizeDailyActivityOutput> {
+  return summarizeDailyActivityFlow(input);
+}
+
+const prompt = ai.definePrompt({
+  name: 'summarizeDailyActivityPrompt',
+  input: {schema: SummarizeDailyActivityInputSchema},
+  output: {schema: SummarizeDailyActivityOutputSchema},
+  prompt: `You are an AI assistant that summarizes daily activity data for users, providing them with quick insights into their behavior trends.
+
+  Here is the user's activity data for the day:
+  {{activityData}}
+
+  Provide a concise summary of the user's day, highlighting key trends and insights. Focus on app usage, location data, mood logs and health metrics.
+  The summary should be no more than 200 words.
+  `,
+});
+
+const summarizeDailyActivityFlow = ai.defineFlow(
+  {
+    name: 'summarizeDailyActivityFlow',
+    inputSchema: SummarizeDailyActivityInputSchema,
+    outputSchema: SummarizeDailyActivityOutputSchema,
+  },
+  async input => {
+    const {output} = await prompt(input);
+    return output!;
+  }
+);
