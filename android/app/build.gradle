@@ -1,0 +1,12 @@
+android {
+    namespace "com.example.behaviormind"
+    compileSdkVersion 34
+    
+    defaultConfig {
+        applicationId "com.example.behaviormind"
+        minSdkVersion 21
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+}
